@@ -9,6 +9,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.10.0"
+  battery_level:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "1761f766cb17dc99c632c8ca7ae63e7c9e3b6696"
+      url: "https://github.com/gimadev/battery_level.git"
+    source: git
+    version: "0.0.1"
   boolean_selector:
     dependency: transitive
     description:
@@ -123,6 +132,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.8.2"
+  plugin_platform_interface:
+    dependency: transitive
+    description:
+      name: plugin_platform_interface
+      sha256: "6a2128648c854906c53fa8e33986fc0247a1116122f9534dd20e3ab9e16a32bc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.4"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -186,3 +203,4 @@ packages:
     version: "2.1.4"
 sdks:
   dart: ">=2.19.5 <3.0.0"
+  flutter: ">=2.5.0"

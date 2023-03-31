@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:battery_level/battery_level.dart';
 
 void main() {
   runApp(const MyApp());
@@ -50,8 +51,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-  static const platform = MethodChannel('samples.flutter.dev/battery');
+
+  final _batteryLevelPlugin = BatteryLevel();
   String _batteryLevel = 'Unknown battery level.';
 
   @override
@@ -74,11 +75,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _getBatteryLevel() async {
     String batteryLevel;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    // We also handle the message potentially returning null.
     try {
-      final int result = await platform.invokeMethod('getBatteryLevel');
-      batteryLevel = 'Battery level at $result % .';
-    } on PlatformException catch (e) {
-      batteryLevel = "Failed to get battery level: '${e.message}'.";
+      batteryLevel = await _batteryLevelPlugin.getBatteryLevel() ?? 'Unknown battery level';
+    } on PlatformException {
+      batteryLevel = 'Failed to get battery level.';
     }
 
     setState(() {
