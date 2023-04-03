@@ -84,6 +84,15 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  geolocation:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "075a69e77a4873a549a6f24f579846ea165d199c"
+      url: "https://github.com/gimadev/geolocation.git"
+    source: git
+    version: "0.0.1"
   js:
     dependency: transitive
     description:

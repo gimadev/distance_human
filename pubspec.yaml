@@ -37,6 +37,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   battery_level:
     git: https://github.com/gimadev/battery_level.git
+  geolocation:
+    git: https://github.com/gimadev/geolocation.git
 
 dev_dependencies:
   flutter_test:

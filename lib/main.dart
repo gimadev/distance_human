@@ -1,90 +1,77 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+import 'dart:async';
+
 import 'package:flutter/services.dart';
-import 'package:battery_level/battery_level.dart';
+import 'package:geolocation/geolocation.dart';
+import 'package:geolocation/geolocation_platform_interface.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
+  State<MyApp> createState() => _MyAppState();
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class _MyAppState extends State<MyApp> {
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
+  String _lat = "Unknown";
+  String _lng = "Unknown";
+  String _distance = "Unknown";
+  String _time = "Unknown";
 
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+  final _geolocationPlugin = Geolocation();
 
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-
-  final _batteryLevelPlugin = BatteryLevel();
-  String _batteryLevel = 'Unknown battery level.';
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            ElevatedButton(
-              onPressed: _getBatteryLevel,
-              child: const Text('Get Battery Level'),
-            ),
-            Text(_batteryLevel),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _getBatteryLevel() async {
-    String batteryLevel;
+  // Platform messages are asynchronous, so we initialize in an async method.
+  Future<void> getLocation() async {
+    LocationType? location;
     // Platform messages may fail, so we use a try/catch PlatformException.
     // We also handle the message potentially returning null.
     try {
-      batteryLevel = await _batteryLevelPlugin.getBatteryLevel() ?? 'Unknown battery level';
-    } on PlatformException {
-      batteryLevel = 'Failed to get battery level.';
+      location = await _geolocationPlugin.getLocation();
+    } on PlatformException catch (e) {
+      //location = 'Failed to get location.';
     }
 
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
+
     setState(() {
-      _batteryLevel = batteryLevel;
+      _lat = "lat: ${location?['lat']}";
+      _lng = "lng: ${location?['lng']}";
+      _distance = "distance: ${location?['distance']}";
+      _time = "time: ${location?['time']}";
     });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Plugin example app'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: getLocation,
+                child: const Text('Get Location'),
+              ),
+              Text(_lat),
+              Text(_lng),
+              Text(_distance),
+              Text(_time),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
