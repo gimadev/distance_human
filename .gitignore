@@ -45,3 +45,6 @@ app.*.map.json
 
 distance_human.code-workspace
 .vscode
+.firebaserc
+database.rules.json
+firebase.json
