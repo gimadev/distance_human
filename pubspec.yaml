@@ -39,6 +39,7 @@ dependencies:
     git: https://github.com/gimadev/battery_level.git
   geolocation:
     git: https://github.com/gimadev/geolocation.git
+  firebase_core: ^2.9.0
 
 dev_dependencies:
   flutter_test:
