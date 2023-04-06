@@ -48,3 +48,5 @@ distance_human.code-workspace
 .firebaserc
 database.rules.json
 firebase.json
+google-services.json
+lib/firebase_options.dart
