@@ -123,7 +123,7 @@ class _MyAppState extends State<MyApp> {
     // We also handle the message potentially returning null.
     try {
       location = await _geolocationPlugin.getLocation();
-    } on PlatformException catch (e) {
+    } on PlatformException catch (_) {
       //location = 'Failed to get location.';
     }
 
