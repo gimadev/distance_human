@@ -11,8 +11,9 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
-void main() {
+typedef Users = Map<Object?, Object?>;
 
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
@@ -28,44 +29,18 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late DatabaseReference ref;
-  late TextEditingController _controller;
-  var _nameReady = false;
   final _geolocationPlugin = Geolocation();
   late SharedPreferences prefs;
+  Users? users;
 
   String get uuid {
     if (prefs.containsKey('uuid')) {
       return prefs.getString('uuid')!;
     } else {
-      var uuid = const Uuid();
-      var uuidStr = uuid.v1();
-      prefs.setString('uuid', uuidStr);
-      return uuidStr;
+      var userRef = ref.push();
+      prefs.setString('uuid', userRef.key!);
+      return userRef.key!;
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = TextEditingController();
-
-    _controller.addListener(() {
-      final text = _controller.text.toLowerCase();
-
-      if (text.length > 2) {
-        setState(() {
-          _nameReady = true;
-        });
-      } else {
-        setState(() {
-          _nameReady = false;
-        });
-      }
-    });
-
-    //initServices();
-    //initTimer();
   }
 
   Future<void> initServices() async {
@@ -76,45 +51,44 @@ class _MyAppState extends State<MyApp> {
     ref = FirebaseDatabase.instance.ref("users");
 
     prefs = await SharedPreferences.getInstance();
+
+    initSender();
+
+    listen();
   }
 
-  void initTimer() {
-    Timer.periodic(const Duration(seconds: 5), periodic);
+  void initSender() {
+    Timer.periodic(const Duration(seconds: 20), updateLocation);
   }
 
-  Future<void> periodic(timer) async {
+  void listen() {
+    ref.onValue.listen((DatabaseEvent event) {
+      if (event.snapshot.exists) {
+        setState(() {
+          users = event.snapshot.value as Users;
+        });
+      }
+    });
+  }
+
+  Future<void> updateLocation(timer) async {
     var location = await getLocation();
 
     if (location != null) {
-      var distance = double.parse(location['distance'] as String);
-
-      // if (distance > 10) {
-      //   print("little2");
-      // }
-
-      await ref.set({
-        "name": "John",
-        "age": 18,
-        "address": {"line1": "100 Mountain View"}
-      });
+      await sendLocation(location);
     }
   }
 
-  Widget registerButton() {
-    if (_nameReady) {
-      return ElevatedButton(
-        onPressed: registerHandler,
-        child: const Text('Регистрация'),
-      );
-    } else {
-      return const ElevatedButton(
-        onPressed: null,
-        child: Text('Регистрация'),
-      );
+  Future<void> sendLocation(LocationType location) async {
+    var distance = double.parse(location['distance'] as String);
+
+    if (distance > 10) {
+      var lat = double.parse(location['lat'] as String);
+      var lng = double.parse(location['lng'] as String);
+
+      await ref.child(uuid).update({"lat": lat, "lng": lng});
     }
   }
-
-  void registerHandler() {}
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<LocationType?> getLocation() async {
@@ -144,70 +118,20 @@ class _MyAppState extends State<MyApp> {
   }
 
   Widget getBody(BuildContext context) {
-    return spinner();
+    if (users != null) {
+      return body(context);
+    } else {
+      return initBody(context);
+    }
   }
 
-  Widget registerForm() {
-    return Center(
-      child: Column(children: [
-        Expanded(
-          flex: 4,
-          child: Row(),
-        ),
-        Expanded(
-          flex: 1,
-          child: Row(children: [
-            Expanded(
-              flex: 1,
-              child: Column(),
-            ),
-            Expanded(
-              flex: 8,
-              child: TextField(
-                  controller: _controller,
-                  style: const TextStyle(fontSize: 17, fontFamily: "Verdana"),
-                  decoration: const InputDecoration(
-                      labelText: 'Имя', border: OutlineInputBorder())),
-            ),
-            Expanded(
-              flex: 1,
-              child: Column(),
-            )
-          ]),
-        ),
-        Expanded(
-          flex: 1,
-          child: Row(children: [
-            Expanded(
-              flex: 1,
-              child: Column(),
-            ),
-            Expanded(
-              flex: 8,
-              child: registerButton(),
-            ),
-            Expanded(
-              flex: 1,
-              child: Column(),
-            ),
-          ]),
-        ),
-        Expanded(
-          flex: 4,
-          child: Row(),
-        )
-      ]),
-    );
-  }
-
-  Widget spinner() {
+  Widget initBody(BuildContext context) {
     return FutureBuilder<String>(
-      future: _calculation(), // a previously-obtained Future<String> or null
+      future: _getUuid(), // a previously-obtained Future<String> or null
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
         List<Widget> children;
 
         if (snapshot.hasData) {
-
           children = <Widget>[
             const Padding(
               padding: EdgeInsets.only(top: 20),
@@ -222,34 +146,8 @@ class _MyAppState extends State<MyApp> {
               child: Center(
                 child: Text('UUID: ${snapshot.data}'),
               ),
-            ),
+            )
           ];
-
-          // children = [
-          //   ListTile(
-          //     contentPadding: const EdgeInsets.all(15),
-          //     leading: const Icon(
-          //       Icons.location_on_sharp,
-          //       color: Colors.blue,
-          //       size: 60,
-          //     ),
-          //     title: Text('UUID: ${snapshot.data!}'),
-          //     subtitle: const Text('дистанция 50 км'),
-          //     tileColor: Colors.orange
-          //   ),
-          //   ListTile(
-          //     contentPadding: const EdgeInsets.all(15),
-          //     leading: const Icon(
-          //       Icons.location_on_sharp,
-          //       color: Colors.blue,
-          //       size: 60,
-          //     ),
-          //     title: Text('UUID: ${snapshot.data!}'),
-          //     subtitle: const Text('дистанция 50 км'),
-          //     tileColor: Colors.orange
-          //   ),
-          // ];
-
         } else if (snapshot.hasError) {
           children = <Widget>[
             const Icon(
@@ -281,7 +179,42 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  Future<String> _calculation() async {
+  Widget body(BuildContext context) {
+    var children = <Widget>[];
+
+    users?.forEach((key, value) {
+      late Widget w;
+
+      if (key == uuid) {
+        w = ListTile(
+            contentPadding: const EdgeInsets.all(15),
+            leading: const Icon(
+              Icons.location_on_sharp,
+              color: Colors.blue,
+              size: 60,
+            ),
+            title: Text('UUID: $key'),
+            tileColor: Colors.orange);
+      } else {
+        w = ListTile(
+            contentPadding: const EdgeInsets.all(15),
+            leading: const Icon(
+              Icons.location_on_sharp,
+              color: Colors.blue,
+              size: 60,
+            ),
+            title: Text('UUID: $key'),
+            subtitle: const Text('дистанция 50 км'),
+            tileColor: Colors.orange);
+      }
+
+      children.add(w);
+    });
+
+    return ListView(children: children);
+  }
+
+  Future<String> _getUuid() async {
     await initServices();
     return uuid;
   }
