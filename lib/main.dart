@@ -77,7 +77,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void initTimer() {
-    Timer.periodic(Duration(seconds: 5), periodic);
+    Timer.periodic(const Duration(seconds: 5), periodic);
   }
 
   Future<void> periodic(timer) async {
@@ -204,35 +204,49 @@ class _MyAppState extends State<MyApp> {
         List<Widget> children;
 
         if (snapshot.hasData) {
-          // children = <Widget>[
-          //   const Padding(
-          //     padding: EdgeInsets.only(top: 20),
-          //     child: Icon(
-          //       Icons.check_circle_outline,
-          //       color: Colors.green,
-          //       size: 60,
-          //     ),
-          //   ),
-          //   Padding(
-          //     padding: const EdgeInsets.only(top: 16),
-          //     child: Center(
-          //       child: Text('UUID: ${snapshot.data}'),
-          //     ),
-          //   ),
-          // ];
 
-          children = [
-            ListTile(
-              contentPadding: const EdgeInsets.all(15),
-              leading: const Icon(
-                Icons.location_on_sharp,
+          children = <Widget>[
+            const Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: Icon(
+                Icons.check_circle_outline,
                 color: Colors.green,
                 size: 60,
               ),
-              title: Text('UUID: ${snapshot.data!}'),
-              subtitle: const Text('дистанция 50 км'),
-            )
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Center(
+                child: Text('UUID: ${snapshot.data}'),
+              ),
+            ),
           ];
+
+          // children = [
+          //   ListTile(
+          //     contentPadding: const EdgeInsets.all(15),
+          //     leading: const Icon(
+          //       Icons.location_on_sharp,
+          //       color: Colors.blue,
+          //       size: 60,
+          //     ),
+          //     title: Text('UUID: ${snapshot.data!}'),
+          //     subtitle: const Text('дистанция 50 км'),
+          //     tileColor: Colors.orange
+          //   ),
+          //   ListTile(
+          //     contentPadding: const EdgeInsets.all(15),
+          //     leading: const Icon(
+          //       Icons.location_on_sharp,
+          //       color: Colors.blue,
+          //       size: 60,
+          //     ),
+          //     title: Text('UUID: ${snapshot.data!}'),
+          //     subtitle: const Text('дистанция 50 км'),
+          //     tileColor: Colors.orange
+          //   ),
+          // ];
+
         } else if (snapshot.hasError) {
           children = <Widget>[
             const Icon(
