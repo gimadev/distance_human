@@ -9,7 +9,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
+import 'package:battery_level/battery_level.dart';
 
 typedef Users = Map<Object?, Object?>;
 
@@ -30,6 +30,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late DatabaseReference ref;
   final _geolocationPlugin = Geolocation();
+  final _batteryLevelPlugin = BatteryLevel();
   late SharedPreferences prefs;
   Users? users;
 
@@ -54,14 +55,14 @@ class _MyAppState extends State<MyApp> {
 
     initSender();
 
-    listen();
+    listenDB();
   }
 
   void initSender() {
     Timer.periodic(const Duration(seconds: 20), updateLocation);
   }
 
-  void listen() {
+  void listenDB() {
     ref.onValue.listen((DatabaseEvent event) {
       if (event.snapshot.exists) {
         setState(() {
@@ -75,6 +76,8 @@ class _MyAppState extends State<MyApp> {
     var location = await getLocation();
 
     if (location != null) {
+      final batteryLevel = await _batteryLevelPlugin.getBatteryLevel() ?? 'Unknown battery level';
+      location["battery"] = batteryLevel;
       await sendLocation(location);
     }
   }
@@ -85,8 +88,9 @@ class _MyAppState extends State<MyApp> {
     if (distance > 10) {
       var lat = double.parse(location['lat'] as String);
       var lng = double.parse(location['lng'] as String);
+      var battery = double.parse(location['battery'] as String);
 
-      await ref.child(uuid).update({"lat": lat, "lng": lng});
+      await ref.child(uuid).update({"lat": lat, "lng": lng, "battery": battery});
     }
   }
 
@@ -185,6 +189,10 @@ class _MyAppState extends State<MyApp> {
     users?.forEach((key, value) {
       late Widget w;
 
+      value as Map;
+
+      final battery = value["battery"] ?? "";
+
       if (key == uuid) {
         w = ListTile(
             contentPadding: const EdgeInsets.all(15),
@@ -194,6 +202,7 @@ class _MyAppState extends State<MyApp> {
               size: 60,
             ),
             title: Text('UUID: $key'),
+            subtitle: Text("батарея $battery"),
             tileColor: Colors.orange);
       } else {
         w = ListTile(
@@ -204,7 +213,7 @@ class _MyAppState extends State<MyApp> {
               size: 60,
             ),
             title: Text('UUID: $key'),
-            subtitle: const Text('дистанция 50 км'),
+            subtitle: Text("батарея $battery, дистанция 50 км"),
             tileColor: Colors.orange);
       }
 
