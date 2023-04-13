@@ -10,11 +10,14 @@ import 'firebase_options.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:battery_level/battery_level.dart';
+import 'package:wakelock/wakelock.dart';
 
 typedef Users = Map<Object?, Object?>;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
+  Wakelock.enable();
 
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
       .then((value) => runApp(const MyApp()));
